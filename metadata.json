@@ -1,0 +1,5 @@
+{
+  "name": "MARD 拼豆图纸生成器",
+  "description": "基于 MARD (玛丽豆) 221 色系的拼豆图纸生成工具，支持 Lab 色彩空间 Delta E 算法精准配色。",
+  "requestFramePermissions": []
+}

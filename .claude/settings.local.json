@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
