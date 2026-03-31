@@ -394,8 +394,15 @@ export const MARD_COLORS_SORTED = [...MARD_COLORS].sort((a, b) => a.id.localeCom
 export const MARD_COLORS_LAB: (MardColor & { lab: [number, number, number] })[] =
   MARD_COLORS.map(color => ({ ...color, lab: rgbToLab(...color.rgb) }));
 
-// 查找白色作为透明像素的替代色
+// 透明像素标记（不在色卡中出现，用于去背后的透明区域）
 const WHITE_COLOR = MARD_COLORS_LAB.find(c => c.hex === "#FFFFFF")!;
+
+export const TRANSPARENT_COLOR: MardColor = {
+  id: '__TRANSPARENT__',
+  name: '透明',
+  hex: 'transparent',
+  rgb: [0, 0, 0],
+};
 
 
 /**
@@ -466,6 +473,64 @@ export function getClosestMardColor(pixelRGB: [number, number, number]): MardCol
   return closestColor;
 }
 
+/**
+ * 判断是否为透明标记
+ */
+export function isTransparent(color: MardColor): boolean {
+  return color.id === '__TRANSPARENT__';
+}
+
+/**
+ * 智能合并低频杂色
+ * 将出现次数 < minCount 的颜色合并到 LAB 距离最近的邻居色
+ */
+export function smartMergeGrid(
+  grid: MardColor[][],
+  minCount: number = 3
+): MardColor[][] {
+  // 统计每种颜色的出现次数
+  const counts = new Map<string, number>();
+  for (const row of grid) {
+    for (const color of row) {
+      if (isTransparent(color)) continue;
+      counts.set(color.id, (counts.get(color.id) || 0) + 1);
+    }
+  }
+
+  // 找出需要合并的颜色（低频且非透明）
+  const lowFreq = MARD_COLORS_LAB.filter(c => (counts.get(c.id) || 0) > 0 && (counts.get(c.id) || 0) < minCount);
+
+  if (lowFreq.length === 0) return grid; // 无需合并
+
+  // 为每个低频色找最近的非低频色作为替代
+  const replacementMap = new Map<string, MardColor>();
+  for (const color of lowFreq) {
+    let minDist = Infinity;
+    let bestReplacement = MARD_COLORS_LAB.find(c => (counts.get(c.id) || 0) >= minCount)!;
+    for (const candidate of MARD_COLORS_LAB) {
+      if ((counts.get(candidate.id) || 0) < minCount) continue;
+      if (candidate.id === color.id) continue;
+      const dist = deltaE(color.lab!, candidate.lab!);
+      if (dist < minDist) {
+        minDist = dist;
+        bestReplacement = candidate;
+      }
+    }
+    replacementMap.set(color.id, bestReplacement);
+  }
+
+  // 应用合并
+  const merged: MardColor[][] = grid.map(row =>
+    row.map(color => {
+      if (isTransparent(color)) return color;
+      const replacement = replacementMap.get(color.id);
+      return replacement || color;
+    })
+  );
+
+  return merged;
+}
+
 export interface PixelateResult {
   grid: MardColor[][];
   width: number;
@@ -475,10 +540,15 @@ export interface PixelateResult {
 
 /**
  * 图像像素化并量化为 MARD 颜色索引
+ * @param dataUrl - 图片数据 URL
+ * @param gridSize - 目标像素尺寸（长边）
+ * @param preserveTransparency - 是否保留透明区域，true 时透明像素标记为 TRANSPARENT_COLOR
  */
 export async function pixelateImage(
   dataUrl: string,
-  gridSize: number = 29
+  gridSize: number = 29,
+  preserveTransparency: boolean = false,
+  mergeNoise: boolean = true
 ): Promise<PixelateResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -520,10 +590,15 @@ export async function pixelateImage(
           const b = data[idx + 2];
           const a = data[idx + 3];
 
-          // 如果透明度太低，视为背景（白色或透明）
+          // 如果透明度太低，视为透明区域
           if (a < 128) {
-            row.push(WHITE_COLOR);
-            usedColorsMap.set(WHITE_COLOR.id, WHITE_COLOR);
+            if (preserveTransparency) {
+              row.push(TRANSPARENT_COLOR);
+              usedColorsMap.set(TRANSPARENT_COLOR.id, TRANSPARENT_COLOR);
+            } else {
+              row.push(WHITE_COLOR);
+              usedColorsMap.set(WHITE_COLOR.id, WHITE_COLOR);
+            }
           } else {
             const closest = getClosestMardColor([r, g, b]);
             row.push(closest);
@@ -533,11 +608,26 @@ export async function pixelateImage(
         grid.push(row);
       }
 
+      // 智能合并低频杂色
+      const finalGrid = mergeNoise ? smartMergeGrid(grid, 3) : grid;
+
+      // 重新统计合并后的颜色
+      const finalColorsMap = new Map<string, MardColor>();
+      for (const row of finalGrid) {
+        for (const color of row) {
+          if (isTransparent(color)) {
+            finalColorsMap.set(color.id, color);
+          } else {
+            finalColorsMap.set(color.id, color);
+          }
+        }
+      }
+
       resolve({
-        grid,
+        grid: finalGrid,
         width,
         height,
-        usedColors: Array.from(usedColorsMap.values()).sort((a, b) => a.id.localeCompare(b.id))
+        usedColors: Array.from(finalColorsMap.values()).sort((a, b) => a.id.localeCompare(b.id))
       });
     };
     img.onerror = reject;
@@ -564,6 +654,13 @@ export function gridToCanvas(
 
   grid.forEach((row, y) => {
     row.forEach((color, x) => {
+      // 透明像素：绘制为白色（背景色）
+      if (isTransparent(color)) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        return;
+      }
+
       // 绘制正方形豆子（充满格子，无间距）
       ctx.fillStyle = color.hex;
       ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
