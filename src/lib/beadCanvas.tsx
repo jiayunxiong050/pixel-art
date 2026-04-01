@@ -144,15 +144,17 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
 
     const centerCanvas = () => {
       const rect = container.getBoundingClientRect();
-      const centerX = (rect.width - canvasWidth) / 2;
-      const centerY = (rect.height - canvasHeight) / 2;
-      setView({ scale: 1, panX: centerX, panY: centerY });
+      // canvas 尺寸
+      const cw = gridW * cellSize;
+      const ch = gridH * cellSize;
+      // 居中偏移
+      const panX = (rect.width - cw) / 2;
+      const panY = (rect.height - ch) / 2;
+      setView({ scale: 1, panX, panY });
     };
 
     centerCanvas();
-    window.addEventListener('resize', centerCanvas);
-    return () => window.removeEventListener('resize', centerCanvas);
-  }, [canvasWidth, canvasHeight]);
+  }, [gridW, gridH, cellSize]);
 
   // 获取格子坐标
   const getCellFromEvent = useCallback((e: React.MouseEvent | React.TouchEvent) => {
