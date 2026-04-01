@@ -153,10 +153,11 @@ export default function App() {
     }
   }, [historyIndex, history]);
 
-  // 颜色统计
+  // 颜色统计（排除zg色号）
   const colorStats = useMemo(() => {
     const stats = recalculateColorStats(grid);
     return Array.from(stats.entries())
+      .filter(([, { color }]) => !color.id.startsWith('zg'))
       .map(([id, { color, count }]) => ({ color, count, index: 0 }))
       .sort((a, b) => b.count - a.count)
       .map((item, i) => ({ ...item, index: i + 1 }));
