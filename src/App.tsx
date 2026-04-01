@@ -15,6 +15,7 @@ import {
   Droplets,
   Grid3X3,
   Undo2,
+  X,
 } from 'lucide-react';
 import {
   pixelateImage,
@@ -48,6 +49,10 @@ export default function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showGridLines, setShowGridLines] = useState(true);
   const [hasImage, setHasImage] = useState(false);
+
+  // 移动端状态
+  const [showMobileToolbar, setShowMobileToolbar] = useState(false);
+  const [showMobileColorPanel, setShowMobileColorPanel] = useState(false);
 
   // 网格数据
   const [grid, setGrid] = useState<MardColor[][]>([]);
@@ -591,8 +596,8 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#FDF8F3] text-[#7A4830] font-sans overflow-hidden">
-      {/* 左侧工具栏 */}
-      <aside className="w-20 bg-[#FBF1E8] border-r border-[#F5E4D8] flex flex-col items-center py-4 overflow-y-auto z-20">
+      {/* 左侧工具栏 - 桌面显示，移动端隐藏 */}
+      <aside className="hidden md:flex w-20 bg-[#FBF1E8] border-r border-[#F5E4D8] flex flex-col items-center py-4 overflow-y-auto z-20">
         {/* Logo 区域 */}
         <div className="w-14 h-14 mb-6 flex items-center justify-center">
           <div className="w-10 h-10 bg-gradient-to-br from-[#E8A87C] to-[#C97B4B] rounded-2xl flex items-center justify-center shadow-md" style={{boxShadow: '0 4px 16px rgba(232,168,124,0.25)'}}>
@@ -916,8 +921,8 @@ export default function App() {
           )}
         </div>
 
-        {/* Footer */}
-        <footer className="h-10 bg-[#FBF1E8] border-t border-[#F5E4D8] flex items-center px-5 justify-between">
+        {/* Footer - 桌面显示，移动端隐藏 */}
+        <footer className="hidden md:flex h-10 bg-[#FBF1E8] border-t border-[#F5E4D8] flex items-center px-5 justify-between">
           <div className="flex gap-6 text-[11px] text-[#C4A090]">
             <span>画布 {canvasW}×{canvasH}</span>
             {grid.length > 0 && <span>内容 {gridW}×{gridH}</span>}
@@ -930,8 +935,76 @@ export default function App() {
         </footer>
       </main>
 
-      {/* 右侧面板 */}
-      <aside className="w-64 bg-[#FBF1E8] border-l border-[#F5E4D8] flex flex-col overflow-hidden">
+      {/* 移动端底部工具条 */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#FBF1E8] border-t border-[#F5E4D8] px-2 py-2 z-50">
+        <div className="flex items-center justify-around">
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload size={20} className="text-[#E8A87C]" />
+            <span className="text-[10px] text-[#B09080]">上传</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={handleShowPreview}
+            disabled={grid.length === 0}
+          >
+            <Download size={20} className={grid.length === 0 ? "text-[#D4C0B0]" : "text-[#7a6a58]"} />
+            <span className="text-[10px] text-[#B09080]">预览</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={() => setCurrentTool(t => t === 'eyedropper' ? 'select' : 'eyedropper')}
+          >
+            <Pipette size={20} className={currentTool === 'eyedropper' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[10px] text-[#B09080]">取色</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={() => setCurrentTool(t => t === 'fill' ? 'select' : 'fill')}
+            disabled={!currentColor}
+          >
+            <Droplets size={20} className={currentTool === 'fill' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[10px] text-[#B09080]">填充</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={() => setShowMobileColorPanel(v => !v)}
+          >
+            <Palette size={20} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[10px] text-[#B09080]">选色</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 p-2"
+            onClick={handleDownload}
+            disabled={grid.length === 0}
+          >
+            <Download size={20} className={grid.length === 0 ? "text-[#D4C0B0]" : "text-[#7a6a58]"} />
+            <span className="text-[10px] text-[#B09080]">导出</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 移动端颜色面板 */}
+      {showMobileColorPanel && (
+        <div className="md:hidden fixed bottom-16 left-2 right-2 bg-[#FBF1E8] rounded-t-xl border border-[#F5E4D8] p-3 z-40 max-h-[50vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-medium text-[#B09080]">选择颜色</span>
+            <button onClick={() => setShowMobileColorPanel(false)}>
+              <X size={16} className="text-[#C4A090]" />
+            </button>
+          </div>
+          <BeadPalette
+            selectedColor={currentColor}
+            onColorSelect={(c) => { handleColorPick(c); setShowMobileColorPanel(false); }}
+            brand={brand}
+          />
+        </div>
+      )}
+
+      {/* 右侧面板 - 桌面显示，移动端隐藏 */}
+      <aside className="hidden lg:flex w-64 bg-[#FBF1E8] border-l border-[#F5E4D8] flex flex-col overflow-hidden">
         {/* 调色板 */}
         <section className="flex-1 flex flex-col overflow-hidden border-b border-[#F5E4D8]">
           <div className="px-4 py-3 flex items-center gap-2">
