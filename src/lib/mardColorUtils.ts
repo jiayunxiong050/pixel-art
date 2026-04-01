@@ -531,6 +531,61 @@ export function smartMergeGrid(
   return merged;
 }
 
+/**
+ * 将网格中的颜色限制为最常使用的 N 种
+ * 超出部分合并到 LAB 距离最近的保留学颜色
+ */
+export function reduceToTopColors(
+  grid: MardColor[][],
+  maxColors: number
+): MardColor[][] {
+  // 统计每种颜色的出现次数（不含透明）
+  const counts = new Map<string, number>();
+  for (const row of grid) {
+    for (const color of row) {
+      if (isTransparent(color)) continue;
+      counts.set(color.id, (counts.get(color.id) || 0) + 1);
+    }
+  }
+
+  const colorCount = counts.size;
+  if (colorCount <= maxColors) return grid; // 无需减少
+
+  // 取出现次数最多的 N 种
+  const sorted = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, maxColors);
+  const topIds = new Set(sorted.map(([id]) => id));
+
+  // 找出所有被淘汰的颜色
+  const excluded = MARD_COLORS_LAB.filter(c => !topIds.has(c.id) && (counts.get(c.id) || 0) > 0);
+
+  // 为每个被淘汰的颜色找最近的保留学颜色
+  const replacementMap = new Map<string, MardColor>();
+  for (const color of excluded) {
+    let minDist = Infinity;
+    let bestReplacement = MARD_COLORS_LAB.find(c => topIds.has(c.id))!;
+    for (const candidate of MARD_COLORS_LAB) {
+      if (!topIds.has(candidate.id)) continue;
+      if (candidate.id === color.id) continue;
+      const dist = deltaE(color.lab!, candidate.lab!);
+      if (dist < minDist) {
+        minDist = dist;
+        bestReplacement = candidate;
+      }
+    }
+    replacementMap.set(color.id, bestReplacement);
+  }
+
+  // 应用替换
+  return grid.map(row =>
+    row.map(color => {
+      if (isTransparent(color)) return color;
+      return replacementMap.get(color.id) || color;
+    })
+  );
+}
+
 export interface PixelateResult {
   grid: MardColor[][];
   width: number;
@@ -548,7 +603,8 @@ export async function pixelateImage(
   dataUrl: string,
   gridSize: number = 29,
   preserveTransparency: boolean = false,
-  mergeNoise: boolean = true
+  mergeNoise: boolean = true,
+  maxColors?: number
 ): Promise<PixelateResult> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -609,7 +665,12 @@ export async function pixelateImage(
       }
 
       // 智能合并低频杂色
-      const finalGrid = mergeNoise ? smartMergeGrid(grid, 3) : grid;
+      let finalGrid = mergeNoise ? smartMergeGrid(grid, 3) : grid;
+
+      // 限制最大颜色数量
+      if (maxColors && maxColors > 0) {
+        finalGrid = reduceToTopColors(finalGrid, maxColors);
+      }
 
       // 重新统计合并后的颜色
       const finalColorsMap = new Map<string, MardColor>();

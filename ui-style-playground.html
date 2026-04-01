@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拼豆编辑器 清新风格对比</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d0d0d; color: #fff; }
+    .tab-btn { transition: all 0.15s; cursor: pointer; }
+    .tab-btn.active { background: #222; border-bottom: 2px solid; }
+    .preview-frame { height: calc(100vh - 56px - 52px); overflow: hidden; }
+    .preview-inner { height: 100%; }
+    .color-dot { width: 28px; height: 28px; border-radius: 6px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部切换栏 -->
+  <div class="h-14 bg-[#0a0a0a] border-b border-white/10 flex items-center px-5 gap-3 shrink-0">
+    <span class="text-xs text-gray-500 mr-2 font-medium">小清新风格预览</span>
+
+    <button onclick="switchStyle(0)" id="tab-0" class="tab-btn active px-4 py-1.5 rounded text-xs text-gray-300">白陶暖调</button>
+    <button onclick="switchStyle(1)" id="tab-1" class="tab-btn px-4 py-1.5 rounded text-xs text-gray-300">抹茶森林</button>
+    <button onclick="switchStyle(2)" id="tab-2" class="tab-btn px-4 py-1.5 rounded text-xs text-gray-300">薄荷奶绿</button>
+    <button onclick="switchStyle(3)" id="tab-3" class="tab-btn px-4 py-1.5 rounded text-xs text-gray-300">奶油杏</button>
+    <button onclick="switchStyle(4)" id="tab-4" class="tab-btn px-4 py-1.5 rounded text-xs text-gray-300">雾霾蓝灰</button>
+    <button onclick="switchStyle(5)" id="tab-5" class="tab-btn px-4 py-1.5 rounded text-xs text-gray-300">极简粉白</button>
+
+    <div class="ml-auto text-[10px] text-gray-600">点击切换预览</div>
+  </div>
+
+  <!-- 预览区 -->
+  <div class="preview-frame">
+    <div id="preview-content"></div>
+  </div>
+
+  <!-- 底部说明 -->
+  <div class="h-13 bg-[#0a0a0a] border-t border-white/10 flex items-center px-6 gap-6 text-[11px] text-gray-500 shrink-0">
+    <div id="style-name" class="text-gray-300 font-medium text-xs"></div>
+    <div id="style-desc" class="text-gray-500 text-xs"></div>
+    <div id="style-hex" class="ml-auto flex gap-3 text-[10px] text-gray-600 font-mono"></div>
+  </div>
+
+  <script>
+    const styles = [
+      {
+        name: '白陶暖调',
+        desc: '米白底 + 陶土橙，温暖、手工感、像在陶艺工作室创作',
+        hex: ['#FAF7F2', '#F5EDE0', '#E8D5C0', '#C9956A', '#8B5E3C'],
+        tabColor: '#c9956a',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#FAF7F2">
+  <!-- Header -->
+  <div style="height:52px;background:#F5EDE0;border-bottom:1px solid #E8D5C0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:0 1px 0 rgba(0,0,0,0.03)">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#C9956A,#8B5E3C);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#5C3D2E;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#EDE4D8;padding:5px 12px;border-radius:8px;border:1px solid #E8D5C0">
+        <span style="font-size:10px;color:#8B5E3C;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#5C3D2E;outline:none">
+        <span style="color:#C9956A;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#5C3D2E;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#EDE4D8;padding:5px 12px;border-radius:8px;border:1px solid #E8D5C0">
+        <span style="font-size:10px;color:#8B5E3C;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#5C3D2E;outline:none">
+        <span style="font-size:10px;color:#C9956A">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C9956A;background:#F5EDE0;font-size:14px;border:1px solid #E8D5C0">✎</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <!-- Toolbar -->
+    <div style="width:56px;background:#F5EDE0;border-right:1px solid #E8D5C0;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;background:#C9956A;font-size:16px;box-shadow:0 2px 8px rgba(201,149,106,0.3)">✎</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#C9956A;background:#FAF7F2;font-size:16px;border:1px solid #E8D5C0">◯</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#E8D5C0;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#B8A090;font-size:16px">⊕</button>
+    </div>
+    <!-- Canvas -->
+    <div style="flex:1;background:#FAF7F2;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#F0E8DC 0% 25%,#EDE4D8 0% 50%) 0 0 / 18px 18px;border:1px dashed #D4C4B0;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#C9956A;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <!-- Right Panel -->
+    <div style="width:240px;background:#F5EDE0;border-left:1px solid #E8D5C0;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#8B5E3C;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#E74C3C"></div>
+        <div class="color-dot" style="background:#F39C12"></div>
+        <div class="color-dot" style="background:#27AE60"></div>
+        <div class="color-dot" style="background:#3498DB"></div>
+        <div class="color-dot" style="background:#9B59B6"></div>
+        <div class="color-dot" style="background:#1ABC9C"></div>
+        <div class="color-dot" style="background:#E67E22"></div>
+        <div class="color-dot" style="background:#C0392B"></div>
+        <div class="color-dot" style="background:#16A085"></div>
+        <div class="color-dot" style="background:#2980B9"></div>
+        <div class="color-dot" style="background:#8E44AD"></div>
+        <div class="color-dot" style="background:#C9956A"></div>
+      </div>
+      <div style="font-size:10px;color:#8B5E3C;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#FAF7F2;border-radius:12px;padding:12px;border:1px solid #E8D5C0;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#8B5E3C">品牌</span>
+          <span style="font-size:11px;color:#C9956A;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#8B5E3C">编号</span>
+          <div style="width:36px;height:20px;background:#C9956A;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#8B5E3C">网格</span>
+          <div style="width:36px;height:20px;background:#E8D5C0;border-radius:10px;position:relative;border:1px solid #C9956A">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:#C9956A;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        name: '抹茶森林',
+        desc: '米绿底 + 抹茶绿，清新、自然、像在植物工作室',
+        hex: ['#F6F5F0', '#ECF3E8', '#D4E4CC', '#7BA05B', '#4A7C3A'],
+        tabColor: '#7ba05b',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#F6F5F0">
+  <!-- Header -->
+  <div style="height:52px;background:#ECF3E8;border-bottom:1px solid #D4E4CC;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#7BA05B,#4A7C3A);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#3D5C2A;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#E2EDDB;padding:5px 12px;border-radius:8px;border:1px solid #D4E4CC">
+        <span style="font-size:10px;color:#4A7C3A;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#3D5C2A;outline:none">
+        <span style="color:#7BA05B;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#3D5C2A;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#E2EDDB;padding:5px 12px;border-radius:8px;border:1px solid #D4E4CC">
+        <span style="font-size:10px;color:#4A7C3A;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#3D5C2A;outline:none">
+        <span style="font-size:10px;color:#7BA05B">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#7BA05B;background:#ECF3E8;font-size:14px;border:1px solid #D4E4CC">✎</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <div style="width:56px;background:#ECF3E8;border-right:1px solid #D4E4CC;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;background:#7BA05B;font-size:16px;box-shadow:0 2px 8px rgba(123,160,91,0.3)">✎</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#7BA05B;background:#F6F5F0;font-size:16px;border:1px solid #D4E4CC">◯</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#D4E4CC;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#A8C090;font-size:16px">⊕</button>
+    </div>
+    <div style="flex:1;background:#F6F5F0;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#E8F0E0 0% 25%,#EEF5EA 0% 50%) 0 0 / 18px 18px;border:1px dashed #B8D0A0;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#7BA05B;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <div style="width:240px;background:#ECF3E8;border-left:1px solid #D4E4CC;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#4A7C3A;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#E74C3C"></div>
+        <div class="color-dot" style="background:#F39C12"></div>
+        <div class="color-dot" style="background:#7BA05B"></div>
+        <div class="color-dot" style="background:#3498DB"></div>
+        <div class="color-dot" style="background:#9B59B6"></div>
+        <div class="color-dot" style="background:#1ABC9C"></div>
+        <div class="color-dot" style="background:#E67E22"></div>
+        <div class="color-dot" style="background:#C0392B"></div>
+        <div class="color-dot" style="background:#16A085"></div>
+        <div class="color-dot" style="background:#2980B9"></div>
+        <div class="color-dot" style="background:#8E44AD"></div>
+        <div class="color-dot" style="background:#4A7C3A"></div>
+      </div>
+      <div style="font-size:10px;color:#4A7C3A;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#F6F5F0;border-radius:12px;padding:12px;border:1px solid #D4E4CC;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#4A7C3A">品牌</span>
+          <span style="font-size:11px;color:#7BA05B;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#4A7C3A">编号</span>
+          <div style="width:36px;height:20px;background:#7BA05B;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#4A7C3A">网格</span>
+          <div style="width:36px;height:20px;background:#D4E4CC;border-radius:10px;position:relative;border:1px solid #7BA05B">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:#7BA05B;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        name: '薄荷奶绿',
+        desc: '浅薄荷底 + 奶绿，清爽、柔和、像在咖啡店角落创作',
+        hex: ['#F0F7F4', '#E6F2ED', '#C8E6D8', '#6DBF9E', '#3A9D6E'],
+        tabColor: '#6dbf9e',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#F0F7F4">
+  <!-- Header -->
+  <div style="height:52px;background:#E6F2ED;border-bottom:1px solid #C8E6D8;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#6DBF9E,#3A9D6E);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#2D7A50;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#DCF0E8;padding:5px 12px;border-radius:8px;border:1px solid #C8E6D8">
+        <span style="font-size:10px;color:#3A9D6E;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#2D7A50;outline:none">
+        <span style="color:#6DBF9E;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#2D7A50;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#DCF0E8;padding:5px 12px;border-radius:8px;border:1px solid #C8E6D8">
+        <span style="font-size:10px;color:#3A9D6E;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#2D7A50;outline:none">
+        <span style="font-size:10px;color:#6DBF9E">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#6DBF9E;background:#E6F2ED;font-size:14px;border:1px solid #C8E6D8">✎</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <div style="width:56px;background:#E6F2ED;border-right:1px solid #C8E6D8;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;background:#6DBF9E;font-size:16px;box-shadow:0 2px 12px rgba(109,191,158,0.35)">✎</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#6DBF9E;background:#F0F7F4;font-size:16px;border:1px solid #C8E6D8">◯</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#C8E6D8;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#A8D8C0;font-size:16px">⊕</button>
+    </div>
+    <div style="flex:1;background:#F0F7F4;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#E4F2EC 0% 25%,#EDF6F2 0% 50%) 0 0 / 18px 18px;border:1px dashed #B0D8C4;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#6DBF9E;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <div style="width:240px;background:#E6F2ED;border-left:1px solid #C8E6D8;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#3A9D6E;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#E74C3C"></div>
+        <div class="color-dot" style="background:#F39C12"></div>
+        <div class="color-dot" style="background:#6DBF9E"></div>
+        <div class="color-dot" style="background:#3498DB"></div>
+        <div class="color-dot" style="background:#9B59B6"></div>
+        <div class="color-dot" style="background:#1ABC9C"></div>
+        <div class="color-dot" style="background:#E67E22"></div>
+        <div class="color-dot" style="background:#C0392B"></div>
+        <div class="color-dot" style="background:#16A085"></div>
+        <div class="color-dot" style="background:#2980B9"></div>
+        <div class="color-dot" style="background:#8E44AD"></div>
+        <div class="color-dot" style="background:#3A9D6E"></div>
+      </div>
+      <div style="font-size:10px;color:#3A9D6E;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#F0F7F4;border-radius:12px;padding:12px;border:1px solid #C8E6D8;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#3A9D6E">品牌</span>
+          <span style="font-size:11px;color:#6DBF9E;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#3A9D6E">编号</span>
+          <div style="width:36px;height:20px;background:#6DBF9E;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        name: '奶油杏',
+        desc: '奶油白底 + 杏粉色，柔软、温馨、像在棉花糖工作室',
+        hex: ['#FDF8F3', '#FBF1E8', '#F5E4D8', '#E8A87C', '#C97B4B'],
+        tabColor: '#e8a87c',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#FDF8F3">
+  <!-- Header -->
+  <div style="height:52px;background:#FBF1E8;border-bottom:1px solid #F5E4D8;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#E8A87C,#C97B4B);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#7A4830;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#F7EDE3;padding:5px 12px;border-radius:8px;border:1px solid #F5E4D8">
+        <span style="font-size:10px;color:#C97B4B;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#7A4830;outline:none">
+        <span style="color:#E8A87C;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#7A4830;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#F7EDE3;padding:5px 12px;border-radius:8px;border:1px solid #F5E4D8">
+        <span style="font-size:10px;color:#C97B4B;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#7A4830;outline:none">
+        <span style="font-size:10px;color:#E8A87C">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#E8A87C;background:#FBF1E8;font-size:14px;border:1px solid #F5E4D8">✎</button>
+      <button style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <div style="width:56px;background:#FBF1E8;border-right:1px solid #F5E4D8;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;background:#E8A87C;font-size:16px;box-shadow:0 4px 16px rgba(232,168,124,0.25)">✎</button>
+      <button style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#E8A87C;background:#FDF8F3;font-size:16px;border:1px solid #F5E4D8">◯</button>
+      <button style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#F5E4D8;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#D4B0A0;font-size:16px">⊕</button>
+    </div>
+    <div style="flex:1;background:#FDF8F3;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#F5EBE2 0% 25%,#FBF4EE 0% 50%) 0 0 / 18px 18px;border:1px dashed #E0CCBC;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#E8A87C;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <div style="width:240px;background:#FBF1E8;border-left:1px solid #F5E4D8;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#C97B4B;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#E74C3C"></div>
+        <div class="color-dot" style="background:#E8A87C"></div>
+        <div class="color-dot" style="background:#F5CBA7"></div>
+        <div class="color-dot" style="background:#3498DB"></div>
+        <div class="color-dot" style="background:#FADBD8"></div>
+        <div class="color-dot" style="background:#D7BDE2"></div>
+        <div class="color-dot" style="background:#F5B7B1"></div>
+        <div class="color-dot" style="background:#FEF9E7"></div>
+        <div class="color-dot" style="background:#ABEBC6"></div>
+        <div class="color-dot" style="background:#AED6F1"></div>
+        <div class="color-dot" style="background:#D2B4DE"></div>
+        <div class="color-dot" style="background:#C97B4B"></div>
+      </div>
+      <div style="font-size:10px;color:#C97B4B;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#FDF8F3;border-radius:14px;padding:12px;border:1px solid #F5E4D8;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#C97B4B">品牌</span>
+          <span style="font-size:11px;color:#E8A87C;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#C97B4B">编号</span>
+          <div style="width:36px;height:20px;background:#E8A87C;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        name: '雾霾蓝灰',
+        desc: '雾霾蓝灰底 + 深蓝灰，清冷、文艺、像在阴天的咖啡馆窗边',
+        hex: ['#F0F2F5', '#E4E8ED', '#D0D8E0', '#6B8299', '#3D556B'],
+        tabColor: '#6b8299',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#F0F2F5">
+  <!-- Header -->
+  <div style="height:52px;background:#E4E8ED;border-bottom:1px solid #D0D8E0;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#6B8299,#3D556B);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#3D556B;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#D8E0E8;padding:5px 12px;border-radius:8px;border:1px solid #D0D8E0">
+        <span style="font-size:10px;color:#3D556B;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#3D556B;outline:none">
+        <span style="color:#6B8299;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#3D556B;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#D8E0E8;padding:5px 12px;border-radius:8px;border:1px solid #D0D8E0">
+        <span style="font-size:10px;color:#3D556B;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#3D556B;outline:none">
+        <span style="font-size:10px;color:#6B8299">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#6B8299;background:#E4E8ED;font-size:14px;border:1px solid #D0D8E0">✎</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <div style="width:56px;background:#E4E8ED;border-right:1px solid #D0D8E0;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;background:#6B8299;font-size:16px;box-shadow:0 2px 10px rgba(107,130,153,0.3)">✎</button>
+      <button style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#6B8299;background:#F0F2F5;font-size:16px;border:1px solid #D0D8E0">◯</button>
+      <button style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#D0D8E0;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#A0B0C0;font-size:16px">⊕</button>
+    </div>
+    <div style="flex:1;background:#F0F2F5;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#E8ECEF 0% 25%,#EFF1F4 0% 50%) 0 0 / 18px 18px;border:1px dashed #C0CAD4;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#6B8299;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <div style="width:240px;background:#E4E8ED;border-left:1px solid #D0D8E0;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#3D556B;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#5D6D7E"></div>
+        <div class="color-dot" style="background:#85929E"></div>
+        <div class="color-dot" style="background:#6B8299"></div>
+        <div class="color-dot" style="background:#3498DB"></div>
+        <div class="color-dot" style="background:#9B59B6"></div>
+        <div class="color-dot" style="background:#1ABC9C"></div>
+        <div class="color-dot" style="background:#5DADE2"></div>
+        <div class="color-dot" style="background:#7F8C8D"></div>
+        <div class="color-dot" style="background:#34495E"></div>
+        <div class="color-dot" style="background:#2980B9"></div>
+        <div class="color-dot" style="background:#8E44AD"></div>
+        <div class="color-dot" style="background:#3D556B"></div>
+      </div>
+      <div style="font-size:10px;color:#3D556B;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#F0F2F5;border-radius:10px;padding:12px;border:1px solid #D0D8E0;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#3D556B">品牌</span>
+          <span style="font-size:11px;color:#6B8299;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#3D556B">编号</span>
+          <div style="width:36px;height:20px;background:#6B8299;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        name: '极简粉白',
+        desc: '粉白底 + 玫瑰粉，少女、柔和、像在花店角落创作',
+        hex: ['#FDF5F7', '#FBEEF2', '#F5DDE6', '#D4708A', '#B05068'],
+        tabColor: '#d4708a',
+        html: `
+<div style="height:100%;display:flex;flex-direction:column;background:#FDF5F7">
+  <!-- Header -->
+  <div style="height:52px;background:#FBEEF2;border-bottom:1px solid #F5DDE6;display:flex;align-items:center;justify-content:space-between;padding:0 20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:32px;height:32px;background:linear-gradient(135deg,#D4708A,#B05068);border-radius:10px;display:flex;align-items:center;justify-content:center">
+        <span style="color:white;font-size:14px;font-weight:700">M</span>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:#7A3048;letter-spacing:0.05em">MARD</span>
+      <div style="display:flex;align-items:center;gap:4px;background:#F8E8EE;padding:5px 12px;border-radius:8px;border:1px solid #F5DDE6">
+        <span style="font-size:10px;color:#B05068;font-weight:500">画布</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#7A3048;outline:none">
+        <span style="color:#D4708A;font-size:11px">×</span>
+        <input type="text" value="50" style="background:transparent;width:36px;text-align:center;font-size:12px;font-family:monospace;color:#7A3048;outline:none">
+      </div>
+      <div style="display:flex;align-items:center;gap:4px;background:#F8E8EE;padding:5px 12px;border-radius:8px;border:1px solid #F5DDE6">
+        <span style="font-size:10px;color:#B05068;font-weight:500">精度</span>
+        <input type="text" value="29" style="background:transparent;width:32px;text-align:center;font-size:12px;font-family:monospace;color:#7A3048;outline:none">
+        <span style="font-size:10px;color:#D4708A">px</span>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#D4708A;background:#FBEEF2;font-size:14px;border:1px solid #F5DDE6">✎</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:14px">◯</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:14px">☐</button>
+      <button style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:14px">⌫</button>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="flex:1;display:flex;overflow:hidden">
+    <div style="width:56px;background:#FBEEF2;border-right:1px solid #F5DDE6;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px">
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;background:#D4708A;font-size:16px;box-shadow:0 4px 16px rgba(212,112,138,0.3)">✎</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#D4708A;background:#FDF5F7;font-size:16px;border:1px solid #F5DDE6">◯</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:16px">☐</button>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:16px">⌫</button>
+      <div style="width:24px;height:1px;background:#F5DDE6;margin:6px 0"></div>
+      <button style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#D0A0B8;font-size:16px">⊕</button>
+    </div>
+    <div style="flex:1;background:#FDF5F7;display:flex;align-items:center;justify-content:center">
+      <div style="width:180px;height:180px;background:repeating-conic-gradient(#F5E8EC 0% 25%,#FBF2F5 0% 50%) 0 0 / 18px 18px;border:1px dashed #E8C8D4;border-radius:4px;display:flex;align-items:center;justify-content:center">
+        <span style="color:#D4708A;font-size:11px;font-weight:500">画布区域</span>
+      </div>
+    </div>
+    <div style="width:240px;background:#FBEEF2;border-left:1px solid #F5DDE6;padding:16px;overflow-y:auto">
+      <div style="font-size:10px;color:#B05068;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">调色板</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:20px">
+        <div class="color-dot" style="background:#E74C3C"></div>
+        <div class="color-dot" style="background:#F5B7B1"></div>
+        <div class="color-dot" style="background:#D4708A"></div>
+        <div class="color-dot" style="background:#FADBD8"></div>
+        <div class="color-dot" style="background:#9B59B6"></div>
+        <div class="color-dot" style="background:#D7BDE2"></div>
+        <div class="color-dot" style="background:#F1948A"></div>
+        <div class="color-dot" style="background:#FDF2F9"></div>
+        <div class="color-dot" style="background:#ABEBC6"></div>
+        <div class="color-dot" style="background:#AED6F1"></div>
+        <div class="color-dot" style="background:#D2B4DE"></div>
+        <div class="color-dot" style="background:#B05068"></div>
+      </div>
+      <div style="font-size:10px;color:#B05068;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">设置</div>
+      <div style="background:#FDF5F7;border-radius:12px;padding:12px;border:1px solid #F5DDE6;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#B05068">品牌</span>
+          <span style="font-size:11px;color:#D4708A;font-weight:600">MARD</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:#B05068">编号</span>
+          <div style="width:36px;height:20px;background:#D4708A;border-radius:10px;position:relative">
+            <div style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:white;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+      }
+    ];
+
+    function switchStyle(index) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+        btn.style.borderBottomColor = i === index ? styles[i].tabColor : 'transparent';
+      });
+
+      const style = styles[index];
+      document.getElementById('preview-content').innerHTML = `<div class="preview-inner">${style.html}</div>`;
+      document.getElementById('style-name').textContent = style.name;
+      document.getElementById('style-desc').textContent = style.desc;
+      document.getElementById('style-hex').innerHTML = style.hex.map(h =>
+        `<span style="display:inline-flex;align-items:center;gap:4px">
+          <span style="width:12px;height:12px;border-radius:2px;background:${h};border:1px solid rgba(0,0,0,0.1)"></span>
+          ${h}
+        </span>`
+      ).join('');
+    }
+
+    // Init
+    switchStyle(0);
+  </script>
+</body>
+</html>
