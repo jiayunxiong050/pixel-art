@@ -830,7 +830,7 @@ export default function App() {
 
         {/* 画布区域 */}
         <div
-          className="flex-1 relative bg-[#FDF8F3] md:pb-0 pb-16"
+          className="flex-1 relative flex flex-col bg-[#FDF8F3] md:pb-0 pb-16"
           onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
           onDrop={handleDrop}
         >
@@ -896,7 +896,7 @@ export default function App() {
             />
           ) : (
             <div
-              className="w-full h-full flex items-center justify-center"
+              className="flex-1 flex items-center justify-center"
               onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
               onDrop={handleDrop}
             >
