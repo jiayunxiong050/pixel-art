@@ -50,7 +50,6 @@ export default function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showGridLines, setShowGridLines] = useState(true);
   const [hasImage, setHasImage] = useState(false);
-  const [canvasKey, setCanvasKey] = useState(0);  // 用于强制重置画布视图
 
   // 移动端状态
   const [showMobileColorPanel, setShowMobileColorPanel] = useState(false);
@@ -369,13 +368,7 @@ export default function App() {
   const handleGridChange = useCallback((newGrid: MardColor[][]) => {
     saveToHistory(newGrid);
     setGrid(newGrid);
-    // 如果网格尺寸变化，重置画布视图
-    const newGridH = newGrid.length;
-    const newGridW = newGrid[0]?.length || 0;
-    if (newGridW !== gridW || newGridH !== gridH) {
-      setCanvasKey(k => k + 1);
-    }
-  }, [saveToHistory, gridW, gridH]);
+  }, [saveToHistory]);
 
   // 导出图纸
   const generateExportDataUrl = useCallback((): string | null => {
@@ -848,7 +841,6 @@ export default function App() {
         >
           {grid.length > 0 ? (
             <BeadCanvas
-              key={canvasKey}
               grid={grid}
               gridW={gridW}
               gridH={gridH}

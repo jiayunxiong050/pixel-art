@@ -81,23 +81,6 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
   // 视图状态
   const [view, setView] = useState<ViewState>({ scale: 1, panX: 0, panY: 0 });
 
-  // 重置视图（当画布尺寸变化时调用）
-  const resetView = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const centerX = (rect.width - canvasWidth) / 2;
-    const centerY = (rect.height - canvasHeight) / 2;
-    setView({ scale: 1, panX: centerX, panY: centerY });
-  }, [canvasWidth, canvasHeight]);
-
-  // 暴露 resetView 给父组件
-  useEffect(() => {
-    if (containerRef.current) {
-      (containerRef.current as any).resetView = resetView;
-    }
-  }, [resetView]);
-
   // 拖拽状态
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
