@@ -964,7 +964,15 @@ export default function App() {
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => setShowMobileColorPanel(v => !v)}
           >
-            <Palette size={22} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <div className="relative">
+              <Palette size={22} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+              {currentColor && (
+                <div
+                  className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border border-white"
+                  style={{ backgroundColor: currentColor.hex }}
+                />
+              )}
+            </div>
             <span className="text-[11px] text-[#B09080]">颜色</span>
           </button>
           <button

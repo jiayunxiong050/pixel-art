@@ -308,17 +308,46 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
+  const getCellFromTouch = (e: React.TouchEvent) => {
+    if (e.touches.length === 0) return null;
+    const touch = e.touches[0];
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return null;
+
+    const canvasX = (touch.clientX - rect.left - view.panX) / view.scale;
+    const canvasY = (touch.clientY - rect.top - view.panY) / view.scale;
+    const col = Math.floor(canvasX / cellSize);
+    const row = Math.floor(canvasY / cellSize);
+    if (row >= 0 && row < gridH && col >= 0 && col < gridW) {
+      return { row, col };
+    }
+    return null;
+  };
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       // 双指缩放
       lastTouchDistanceRef.current = getTouchDistance(e);
       setIsDragging(false);
+      setIsDrawing(false);
     } else if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      setIsDragging(true);
-      dragStartRef.current = { x: touch.clientX, y: touch.clientY, panX: view.panX, panY: view.panY };
+      const tool = toolRef.current;
+      if (tool === 'pencil' || tool === 'fill' || tool === 'eraser' || tool === 'eraser-detail') {
+        // 编辑工具：直接在触摸位置执行
+        const cell = getCellFromTouch(e);
+        if (cell) {
+          setIsDrawing(true);
+          performCellAction(cell.row, cell.col);
+          lastCellRef.current = cell;
+        }
+      } else {
+        // 其他工具：拖拽画布
+        const touch = e.touches[0];
+        setIsDragging(true);
+        dragStartRef.current = { x: touch.clientX, y: touch.clientY, panX: view.panX, panY: view.panY };
+      }
     }
-  }, [view]);
+  }, [view, performCellAction]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
@@ -344,17 +373,28 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
 
         lastTouchDistanceRef.current = distance;
       }
-    } else if (e.touches.length === 1 && isDragging) {
-      const touch = e.touches[0];
-      const deltaX = touch.clientX - dragStartRef.current.x;
-      const deltaY = touch.clientY - dragStartRef.current.y;
-      setView(v => ({
-        ...v,
-        panX: dragStartRef.current.panX + deltaX,
-        panY: dragStartRef.current.panY + deltaY,
-      }));
+    } else if (e.touches.length === 1) {
+      const tool = toolRef.current;
+      if (isDrawing && (tool === 'pencil' || tool === 'eraser' || tool === 'eraser-detail' || tool === 'fill')) {
+        // 编辑工具：触摸移动时连续绘制
+        const cell = getCellFromTouch(e);
+        if (cell && (!lastCellRef.current || cell.row !== lastCellRef.current.row || cell.col !== lastCellRef.current.col)) {
+          performCellAction(cell.row, cell.col);
+          lastCellRef.current = cell;
+        }
+      } else if (isDragging) {
+        // 拖拽画布
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - dragStartRef.current.x;
+        const deltaY = touch.clientY - dragStartRef.current.y;
+        setView(v => ({
+          ...v,
+          panX: dragStartRef.current.panX + deltaX,
+          panY: dragStartRef.current.panY + deltaY,
+        }));
+      }
     }
-  }, [isDragging, view]);
+  }, [isDragging, isDrawing, view, performCellAction]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (e.touches.length < 2) {
@@ -362,6 +402,8 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
     }
     if (e.touches.length === 0) {
       setIsDragging(false);
+      setIsDrawing(false);
+      lastCellRef.current = null;
     }
   }, []);
 
