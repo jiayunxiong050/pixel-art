@@ -582,7 +582,7 @@ export default function App() {
         }`}>
           {icon}
         </div>
-        <span className={`text-[9px] font-medium transition-colors ${
+        <span className={`text-[10px] font-medium transition-colors ${
           active ? 'text-[#C97B4B]' : 'text-[#B09080]'
         }`}>{label}</span>
       </button>
