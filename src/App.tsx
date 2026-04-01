@@ -597,7 +597,7 @@ export default function App() {
   return (
     <div className="flex h-screen bg-[#FDF8F3] text-[#7A4830] font-sans overflow-hidden">
       {/* 左侧工具栏 - 桌面显示，移动端隐藏 */}
-      <aside className="hidden md:flex w-20 bg-[#FBF1E8] border-r border-[#F5E4D8] flex flex-col items-center py-4 overflow-y-auto z-20">
+      <aside className="hidden md:flex w-20 h-full bg-[#FBF1E8] border-r border-[#F5E4D8] flex-col items-center py-4 z-20">
         {/* Logo 区域 */}
         <div className="w-14 h-14 mb-6 flex items-center justify-center">
           <div className="w-10 h-10 bg-gradient-to-br from-[#E8A87C] to-[#C97B4B] rounded-2xl flex items-center justify-center shadow-md" style={{boxShadow: '0 4px 16px rgba(232,168,124,0.25)'}}>
@@ -707,118 +707,122 @@ export default function App() {
 
       {/* 主区域 */}
       <main className="flex-1 relative flex flex-col bg-[#FDF8F3]">
-        {/* Header - 桌面+移动端显示 */}
-        <header className="h-14 bg-[#FBF1E8] border-b border-[#F5E4D8] flex items-center justify-between px-5 md:px-5 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-          {/* 左侧 - Logo 和 画布设置 */}
+        {/* Header */}
+        <header className="pt-[env(safe-area-inset-top)] bg-[#FBF1E8] border-b border-[#F5E4D8] flex items-center justify-between px-5">
+          {/* 左侧 - Logo（移动端）和 画布设置（桌面） */}
           <div className="flex items-center gap-6">
+            {/* Logo - 始终显示 */}
             <h1 className="text-sm font-bold tracking-wide text-[#B09080]">MARD Editor</h1>
 
-            {/* 画布尺寸 */}
-            <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
-              <span className="text-[10px] text-[#C97B4B] mr-1">画布</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                defaultValue={canvasW}
-                onFocus={e => { e.target.value = String(canvasW); e.target.select(); }}
-                onBlur={e => {
-                  const val = parseInt(e.target.value) || canvasW;
-                  setCanvasW(Math.max(5, Math.min(300, val)));
-                  e.target.value = String(Math.max(5, Math.min(300, val)));
-                }}
-                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                className="bg-[rgba(201,149,107,0.06)] w-14 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
-              />
-              <span className="text-[#C4A090] text-xs">×</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                defaultValue={canvasH}
-                onFocus={e => { e.target.value = String(canvasH); e.target.select(); }}
-                onBlur={e => {
-                  const val = parseInt(e.target.value) || canvasH;
-                  setCanvasH(Math.max(5, Math.min(300, val)));
-                  e.target.value = String(Math.max(5, Math.min(300, val)));
-                }}
-                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                className="bg-[rgba(201,149,107,0.06)] w-14 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
-              />
-            </div>
-
-            {/* 精度 */}
-            <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
-              <span className="text-[10px] text-[#C97B4B] mr-1">精度</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                defaultValue={pixelGrid}
-                onFocus={e => { e.target.value = String(pixelGrid); e.target.select(); }}
-                onBlur={e => {
-                  const val = parseInt(e.target.value) || pixelGrid;
-                  setPixelGrid(Math.max(5, Math.min(300, val)));
-                  e.target.value = String(Math.max(5, Math.min(300, val)));
-                }}
-                onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                className="bg-[rgba(201,149,107,0.06)] w-12 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
-              />
-              <span className="text-[10px] text-[#C4A090]">px</span>
-            </div>
-
-            {/* 最大颜色 */}
-            <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
-              <span className="text-[10px] text-[#C97B4B]">色数</span>
-              <select
-                value={maxColors}
-                onChange={e => setMaxColors(Number(e.target.value))}
-                className="bg-[rgba(201,149,107,0.06)] text-xs text-[#7A4830] px-1 py-0.5 rounded focus:outline-none cursor-pointer border-none"
-              >
-                <option value={0}>不限</option>
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-
-            {/* 应用按钮 */}
-            {hasImage && (
-              <button
-                onClick={handleReapply}
-                className="px-4 py-1.5 bg-[#E8A87C] hover:bg-[#D4956A] text-white text-xs font-medium rounded-lg transition-colors cursor-pointer"
-              >
-                应用
-              </button>
-            )}
-
-            {/* 品牌 */}
-            <select
-              value={brand}
-              onChange={e => setBrand(e.target.value as Brand)}
-              className="bg-[rgba(201,149,107,0.08)] text-xs text-[#7A4830] px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer border-none"
-            >
-              {(["MARD", "COCO", "漫漫", "盼盼", "咪小窝"] as Brand[]).map(b => (
-                <option key={b} value={b}>{b}</option>
-              ))}
-            </select>
-
-            {/* 当前颜色 */}
-            {currentColor && (
-              <div className="flex items-center gap-2 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg border border-[rgba(232,168,124,0.2)]">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: currentColor.hex }}
+            {/* 桌面端设置 - 移动端隐藏 */}
+            <div className="hidden md:flex items-center gap-4">
+              {/* 画布尺寸 */}
+              <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
+                <span className="text-[10px] text-[#C97B4B] mr-1">画布</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  defaultValue={canvasW}
+                  onFocus={e => { e.target.value = String(canvasW); e.target.select(); }}
+                  onBlur={e => {
+                    const val = parseInt(e.target.value) || canvasW;
+                    setCanvasW(Math.max(5, Math.min(300, val)));
+                    e.target.value = String(Math.max(5, Math.min(300, val)));
+                  }}
+                  onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                  className="bg-[rgba(201,149,107,0.06)] w-12 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
                 />
-                <span className="text-xs font-mono text-[#7A4830]">
-                  {currentColor.brandIds?.[brand] || currentColor.id}
-                </span>
+                <span className="text-[#C4A090] text-xs">×</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  defaultValue={canvasH}
+                  onFocus={e => { e.target.value = String(canvasH); e.target.select(); }}
+                  onBlur={e => {
+                    const val = parseInt(e.target.value) || canvasH;
+                    setCanvasH(Math.max(5, Math.min(300, val)));
+                    e.target.value = String(Math.max(5, Math.min(300, val)));
+                  }}
+                  onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                  className="bg-[rgba(201,149,107,0.06)] w-12 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
+                />
               </div>
-            )}
+
+              {/* 精度 */}
+              <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
+                <span className="text-[10px] text-[#C97B4B] mr-1">精度</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  defaultValue={pixelGrid}
+                  onFocus={e => { e.target.value = String(pixelGrid); e.target.select(); }}
+                  onBlur={e => {
+                    const val = parseInt(e.target.value) || pixelGrid;
+                    setPixelGrid(Math.max(5, Math.min(300, val)));
+                    e.target.value = String(Math.max(5, Math.min(300, val)));
+                  }}
+                  onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                  className="bg-[rgba(201,149,107,0.06)] w-12 text-xs font-mono text-[#7A4830] focus:outline-none text-center rounded px-1 border border-transparent focus:border-[rgba(201,149,107,0.4)] transition-colors"
+                />
+                <span className="text-[10px] text-[#C4A090]">px</span>
+              </div>
+
+              {/* 最大颜色 */}
+              <div className="flex items-center gap-1 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg">
+                <span className="text-[10px] text-[#C97B4B]">色数</span>
+                <select
+                  value={maxColors}
+                  onChange={e => setMaxColors(Number(e.target.value))}
+                  className="bg-[rgba(201,149,107,0.06)] text-xs text-[#7A4830] px-1 py-0.5 rounded focus:outline-none cursor-pointer border-none"
+                >
+                  <option value={0}>不限</option>
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+
+              {/* 应用按钮 */}
+              {hasImage && (
+                <button
+                  onClick={handleReapply}
+                  className="px-4 py-1.5 bg-[#E8A87C] hover:bg-[#D4956A] text-white text-xs font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                  应用
+                </button>
+              )}
+
+              {/* 品牌 */}
+              <select
+                value={brand}
+                onChange={e => setBrand(e.target.value as Brand)}
+                className="bg-[rgba(201,149,107,0.08)] text-xs text-[#7A4830] px-3 py-1.5 rounded-lg focus:outline-none cursor-pointer border-none"
+              >
+                {(["MARD", "COCO", "漫漫", "盼盼", "咪小窝"] as Brand[]).map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+
+              {/* 当前颜色 */}
+              {currentColor && (
+                <div className="flex items-center gap-2 bg-[rgba(201,149,107,0.08)] px-3 py-1.5 rounded-lg border border-[rgba(232,168,124,0.2)]">
+                  <div
+                    className="w-4 h-4 rounded"
+                    style={{ backgroundColor: currentColor.hex }}
+                  />
+                  <span className="text-xs font-mono text-[#7A4830]">
+                    {currentColor.brandIds?.[brand] || currentColor.id}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* 右侧 - 状态 */}
-          <div className="flex items-center gap-4 text-xs text-[#C4A090]">
+          {/* 右侧 - 状态（桌面） */}
+          <div className="hidden md:flex items-center gap-4 text-xs text-[#C4A090]">
             <div className="flex items-center gap-2">
               <div className={`w-1.5 h-1.5 rounded-full ${showLabels ? 'bg-[#E8A87C]' : 'bg-[#D4C0B0]'}`} />
               <span>编号</span>
@@ -936,63 +940,63 @@ export default function App() {
       </main>
 
       {/* 移动端底部工具条 */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#FBF1E8] border-t border-[#F5E4D8] px-2 py-2 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#FBF1E8] border-t border-[#F5E4D8] px-2 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))] z-50">
         <div className="flex items-center justify-around">
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Upload size={20} className="text-[#E8A87C]" />
-            <span className="text-[10px] text-[#B09080]">上传</span>
+            <Upload size={22} className="text-[#E8A87C]" />
+            <span className="text-[11px] text-[#B09080]">上传</span>
           </button>
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
             onClick={handleShowPreview}
             disabled={grid.length === 0}
           >
-            <Download size={20} className={grid.length === 0 ? "text-[#D4C0B0]" : "text-[#7a6a58]"} />
-            <span className="text-[10px] text-[#B09080]">预览</span>
+            <Download size={22} className="text-[#7a6a58]" />
+            <span className="text-[11px] text-[#B09080]">预览</span>
           </button>
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => setCurrentTool(t => t === 'eyedropper' ? 'select' : 'eyedropper')}
           >
-            <Pipette size={20} className={currentTool === 'eyedropper' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[10px] text-[#B09080]">取色</span>
+            <Pipette size={22} className={currentTool === 'eyedropper' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[11px] text-[#B09080]">取色</span>
           </button>
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
             onClick={() => setCurrentTool(t => t === 'fill' ? 'select' : 'fill')}
             disabled={!currentColor}
           >
-            <Droplets size={20} className={currentTool === 'fill' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[10px] text-[#B09080]">填充</span>
+            <Droplets size={22} className={currentTool === 'fill' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[11px] text-[#B09080]">填充</span>
           </button>
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => setShowMobileColorPanel(v => !v)}
           >
-            <Palette size={20} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[10px] text-[#B09080]">选色</span>
+            <Palette size={22} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[11px] text-[#B09080]">选色</span>
           </button>
           <button
-            className="flex flex-col items-center gap-1 p-2"
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
             onClick={handleDownload}
             disabled={grid.length === 0}
           >
-            <Download size={20} className={grid.length === 0 ? "text-[#D4C0B0]" : "text-[#7a6a58]"} />
-            <span className="text-[10px] text-[#B09080]">导出</span>
+            <Download size={22} className="text-[#7a6a58]" />
+            <span className="text-[11px] text-[#B09080]">导出</span>
           </button>
         </div>
       </div>
 
       {/* 移动端颜色面板 */}
       {showMobileColorPanel && (
-        <div className="md:hidden fixed bottom-16 left-2 right-2 bg-[#FBF1E8] rounded-t-xl border border-[#F5E4D8] p-3 z-40 max-h-[50vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium text-[#B09080]">选择颜色</span>
-            <button onClick={() => setShowMobileColorPanel(false)}>
-              <X size={16} className="text-[#C4A090]" />
+        <div className="md:hidden fixed bottom-20 left-2 right-2 bg-[#FBF1E8] rounded-t-2xl border border-[#F5E4D8] p-4 z-40 max-h-[55vh] overflow-y-auto shadow-lg">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-sm font-medium text-[#B09080]">选择颜色</span>
+            <button onClick={() => setShowMobileColorPanel(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[rgba(201,149,107,0.1)]">
+              <X size={18} className="text-[#C4A090]" />
             </button>
           </div>
           <BeadPalette
