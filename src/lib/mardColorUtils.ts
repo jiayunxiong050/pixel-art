@@ -394,9 +394,9 @@ export const MARD_COLORS_SORTED = [...MARD_COLORS].sort((a, b) => a.id.localeCom
 export const MARD_COLORS_LAB: (MardColor & { lab: [number, number, number] })[] =
   MARD_COLORS.map(color => ({ ...color, lab: rgbToLab(...color.rgb) }));
 
-// 排除 zg 色号后的色卡（用于像素化匹配）
+// 排除 ZG 色号（特殊过渡色）后的色卡（用于像素化匹配）
 export const MARD_COLORS_LAB_NO_ZG: (MardColor & { lab: [number, number, number] })[] =
-  MARD_COLORS_LAB.filter(c => !c.id.startsWith('zg'));
+  MARD_COLORS_LAB.filter(c => !c.id.startsWith('ZG'));
 
 // 透明像素标记（不在色卡中出现，用于去背后的透明区域）
 const WHITE_COLOR = MARD_COLORS_LAB.find(c => c.hex === "#FFFFFF")!;
