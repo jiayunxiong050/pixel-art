@@ -592,7 +592,7 @@ export default function App() {
   return (
     <div className="flex h-screen bg-[#FDF8F3] text-[#7A4830] font-sans overflow-hidden">
       {/* 左侧工具栏 */}
-      <aside className="w-20 bg-[#FBF1E8] border-r border-[#F5E4D8] flex flex-col items-center py-4 z-20">
+      <aside className="w-20 bg-[#FBF1E8] border-r border-[#F5E4D8] flex flex-col items-center py-4 overflow-y-auto z-20">
         {/* Logo 区域 */}
         <div className="w-14 h-14 mb-6 flex items-center justify-center">
           <div className="w-10 h-10 bg-gradient-to-br from-[#E8A87C] to-[#C97B4B] rounded-2xl flex items-center justify-center shadow-md" style={{boxShadow: '0 4px 16px rgba(232,168,124,0.25)'}}>
@@ -610,7 +610,7 @@ export default function App() {
           />
         </div>
 
-        <div className="flex-1 w-full px-2 flex flex-col gap-1">
+        <div className="flex-1 w-full px-2 flex flex-col gap-1 overflow-y-auto">
           {/* 文件操作组 */}
           <ToolButton
             icon={<Download size={18} className="text-[#7a6a58]" />}
