@@ -16,6 +16,7 @@ import {
   Grid3X3,
   Undo2,
   X,
+  Settings,
 } from 'lucide-react';
 import {
   pixelateImage,
@@ -49,10 +50,11 @@ export default function App() {
   const [showLabels, setShowLabels] = useState(true);
   const [showGridLines, setShowGridLines] = useState(true);
   const [hasImage, setHasImage] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);  // 用于强制重置画布视图
 
   // 移动端状态
-  const [showMobileToolbar, setShowMobileToolbar] = useState(false);
   const [showMobileColorPanel, setShowMobileColorPanel] = useState(false);
+  const [showMobileSettings, setShowMobileSettings] = useState(false);
 
   // 网格数据
   const [grid, setGrid] = useState<MardColor[][]>([]);
@@ -367,7 +369,13 @@ export default function App() {
   const handleGridChange = useCallback((newGrid: MardColor[][]) => {
     saveToHistory(newGrid);
     setGrid(newGrid);
-  }, [saveToHistory]);
+    // 如果网格尺寸变化，重置画布视图
+    const newGridH = newGrid.length;
+    const newGridW = newGrid[0]?.length || 0;
+    if (newGridW !== gridW || newGridH !== gridH) {
+      setCanvasKey(k => k + 1);
+    }
+  }, [saveToHistory, gridW, gridH]);
 
   // 导出图纸
   const generateExportDataUrl = useCallback((): string | null => {
@@ -840,6 +848,7 @@ export default function App() {
         >
           {grid.length > 0 ? (
             <BeadCanvas
+              key={canvasKey}
               grid={grid}
               gridW={gridW}
               gridH={gridH}
@@ -950,14 +959,6 @@ export default function App() {
             <span className="text-[11px] text-[#B09080]">上传</span>
           </button>
           <button
-            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
-            onClick={handleShowPreview}
-            disabled={grid.length === 0}
-          >
-            <Download size={22} className="text-[#7a6a58]" />
-            <span className="text-[11px] text-[#B09080]">预览</span>
-          </button>
-          <button
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => setCurrentTool(t => t === 'eyedropper' ? 'select' : 'eyedropper')}
           >
@@ -978,6 +979,13 @@ export default function App() {
           >
             <Palette size={22} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
             <span className="text-[11px] text-[#B09080]">选色</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
+            onClick={() => setShowMobileSettings(v => !v)}
+          >
+            <Settings size={22} className={showMobileSettings ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[11px] text-[#B09080]">设置</span>
           </button>
           <button
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
@@ -1004,6 +1012,107 @@ export default function App() {
             onColorSelect={(c) => { handleColorPick(c); setShowMobileColorPanel(false); }}
             brand={brand}
           />
+        </div>
+      )}
+
+      {/* 移动端设置面板 */}
+      {showMobileSettings && (
+        <div className="md:hidden fixed bottom-20 left-0 right-0 bg-[#FBF1E8] rounded-t-2xl border-t border-x border-[#F5E4D8] p-4 z-40 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-[#B09080]">设置</span>
+            <button onClick={() => setShowMobileSettings(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[rgba(201,149,107,0.1)]">
+              <X size={18} className="text-[#C4A090]" />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* 画布尺寸 */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#C97B4B] w-10">画布</span>
+              <input
+                type="number"
+                value={canvasW}
+                onChange={e => setCanvasW(Math.max(5, Math.min(300, parseInt(e.target.value) || 5)))}
+                className="w-16 text-sm text-center bg-[rgba(201,149,107,0.1)] rounded-lg px-2 py-1.5 text-[#7A4830] focus:outline-none focus:ring-1 focus:ring-[#E8A87C]"
+              />
+              <span className="text-xs text-[#C4A090]">×</span>
+              <input
+                type="number"
+                value={canvasH}
+                onChange={e => setCanvasH(Math.max(5, Math.min(300, parseInt(e.target.value) || 5)))}
+                className="w-16 text-sm text-center bg-[rgba(201,149,107,0.1)] rounded-lg px-2 py-1.5 text-[#7A4830] focus:outline-none focus:ring-1 focus:ring-[#E8A87C]"
+              />
+            </div>
+
+            {/* 精度 */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#C97B4B] w-10">精度</span>
+              <input
+                type="range"
+                min={5}
+                max={50}
+                value={pixelGrid}
+                onChange={e => setPixelGrid(Number(e.target.value))}
+                className="flex-1 accent-[#E8A87C]"
+              />
+              <span className="text-xs text-[#7A4830] w-8 text-right">{pixelGrid}px</span>
+            </div>
+
+            {/* 色数限制 */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#C97B4B] w-10">色数</span>
+              <select
+                value={maxColors}
+                onChange={e => setMaxColors(Number(e.target.value))}
+                className="flex-1 text-sm bg-[rgba(201,149,107,0.1)] rounded-lg px-2 py-1.5 text-[#7A4830] focus:outline-none focus:ring-1 focus:ring-[#E8A87C]"
+              >
+                <option value={0}>不限</option>
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            {/* 品牌 */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#C97B4B] w-10">品牌</span>
+              <select
+                value={brand}
+                onChange={e => setBrand(e.target.value as Brand)}
+                className="flex-1 text-sm bg-[rgba(201,149,107,0.1)] rounded-lg px-2 py-1.5 text-[#7A4830] focus:outline-none focus:ring-1 focus:ring-[#E8A87C]"
+              >
+                {(["MARD", "COCO", "漫漫", "盼盼", "咪小窝"] as Brand[]).map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 显示编号 */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-[#C97B4B] w-10">编号</span>
+              <button
+                onClick={() => setShowLabels(v => !v)}
+                className={`flex-1 text-sm rounded-lg px-2 py-1.5 text-left transition-colors ${
+                  showLabels ? 'bg-[#E8A87C] text-white' : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+                }`}
+              >
+                {showLabels ? '显示' : '隐藏'}
+              </button>
+            </div>
+
+            {/* 应用按钮 */}
+            {hasImage && (
+              <button
+                onClick={() => { handleReapply(); setShowMobileSettings(false); }}
+                className="w-full py-2 bg-[#E8A87C] hover:bg-[#D4956A] text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
+              >
+                应用设置
+              </button>
+            )}
+          </div>
         </div>
       )}
 
