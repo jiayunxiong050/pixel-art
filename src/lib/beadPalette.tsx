@@ -26,7 +26,7 @@ const BeadPalette: React.FC<BeadPaletteProps> = ({
 
   // 过滤颜色
   const filteredColors = useMemo(() => {
-    let colors = MARD_COLORS;
+    let colors = MARD_COLORS.filter(c => !c.id.startsWith('zg'));
 
     // 搜索过滤
     if (searchTerm) {
