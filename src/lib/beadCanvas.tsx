@@ -43,6 +43,7 @@ interface BeadCanvasProps {
   onCellClick?: (row: number, col: number, color: MardColor) => void;
   onGridChange?: (newGrid: MardColor[][]) => void;
   onColorPick?: (color: MardColor) => void;
+  onFileDrop?: (file: File) => void;
 }
 
 interface ViewState {
@@ -72,6 +73,7 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
   onCellClick,
   onGridChange,
   onColorPick,
+  onFileDrop,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -340,6 +342,15 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
       ref={containerRef}
       className="w-full h-full bg-[#FDF8F3] overflow-auto"
       style={{ touchAction: 'none' }}
+      onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+      onDrop={e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files[0];
+        if (file && onFileDrop) {
+          onFileDrop(file);
+        }
+      }}
     >
       <div
         className="relative inline-block"

@@ -75,6 +75,60 @@ export default function App() {
 
   useEffect(() => { gridRef.current = grid; }, [grid]);
 
+  // 拖拽上传处理
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    // 触发 handleImageUpload
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const dataUrl = event.target?.result as string;
+      originalDataUrlRef.current = dataUrl;
+
+      setLoading(true);
+      setLoadingText('读取图片...');
+      try {
+        const pixelData = await pixelateImage(dataUrl, pixelGrid, false, true, maxColors || undefined);
+        let newGrid: MardColor[][];
+        if (pixelData.width >= canvasW && pixelData.height >= canvasH) {
+          newGrid = pixelData.grid;
+        } else {
+          newGrid = Array.from({ length: canvasH }, () =>
+            Array.from({ length: canvasW }, () => TRANSPARENT_COLOR)
+          );
+          const startX = Math.max(0, Math.floor((canvasW - pixelData.width) / 2));
+          const startY = Math.max(0, Math.floor((canvasH - pixelData.height) / 2));
+          for (let row = 0; row < pixelData.height; row++) {
+            for (let col = 0; col < pixelData.width; col++) {
+              if (startY + row < canvasH && startX + col < canvasW) {
+                newGrid[startY + row][startX + col] = pixelData.grid[row][col];
+              }
+            }
+          }
+          setOffsetX(startX);
+          setOffsetY(startY);
+        }
+        setGrid(newGrid);
+        setGridW(newGrid[0]?.length || 0);
+        setGridH(newGrid.length);
+        setHasImage(true);
+        hasTransparencyRef.current = false;
+        setHistory([newGrid]);
+        setHistoryIndex(0);
+      } catch (err) {
+        console.error(err);
+        alert('图片处理失败');
+      } finally {
+        setLoading(false);
+        setLoadingText('');
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [canvasW, canvasH, pixelGrid, maxColors]);
+
   // 保存到历史
   const saveToHistory = useCallback((newGrid: MardColor[][]) => {
     setHistory(prev => {
@@ -769,7 +823,11 @@ export default function App() {
         </header>
 
         {/* 画布区域 */}
-        <div className="flex-1 relative bg-[#FDF8F3]">
+        <div
+          className="flex-1 relative bg-[#FDF8F3]"
+          onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+          onDrop={handleDrop}
+        >
           {grid.length > 0 ? (
             <BeadCanvas
               grid={grid}
@@ -784,11 +842,59 @@ export default function App() {
               currentColor={currentColor}
               onGridChange={handleGridChange}
               onColorPick={handleColorPick}
+              onFileDrop={(file: File) => {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                  const dataUrl = event.target?.result as string;
+                  originalDataUrlRef.current = dataUrl;
+                  setLoading(true);
+                  setLoadingText('读取图片...');
+                  try {
+                    const pixelData = await pixelateImage(dataUrl, pixelGrid, false, true, maxColors || undefined);
+                    let newGrid: MardColor[][];
+                    if (pixelData.width >= canvasW && pixelData.height >= canvasH) {
+                      newGrid = pixelData.grid;
+                    } else {
+                      newGrid = Array.from({ length: canvasH }, () =>
+                        Array.from({ length: canvasW }, () => TRANSPARENT_COLOR)
+                      );
+                      const startX = Math.max(0, Math.floor((canvasW - pixelData.width) / 2));
+                      const startY = Math.max(0, Math.floor((canvasH - pixelData.height) / 2));
+                      for (let row = 0; row < pixelData.height; row++) {
+                        for (let col = 0; col < pixelData.width; col++) {
+                          if (startY + row < canvasH && startX + col < canvasW) {
+                            newGrid[startY + row][startX + col] = pixelData.grid[row][col];
+                          }
+                        }
+                      }
+                      setOffsetX(startX);
+                      setOffsetY(startY);
+                    }
+                    setGrid(newGrid);
+                    setGridW(newGrid[0]?.length || 0);
+                    setGridH(newGrid.length);
+                    setHasImage(true);
+                    hasTransparencyRef.current = false;
+                    setHistory([newGrid]);
+                    setHistoryIndex(0);
+                  } catch (err) {
+                    console.error(err);
+                    alert('图片处理失败');
+                  } finally {
+                    setLoading(false);
+                    setLoadingText('');
+                  }
+                };
+                reader.readAsDataURL(file);
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
+            <div
+              className="w-full h-full flex items-center justify-center cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-[rgba(201,149,107,0.06)] flex items-center justify-center border border-[rgba(201,149,107,0.12)]">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-[rgba(201,149,107,0.06)] flex items-center justify-center border border-[rgba(201,149,107,0.12)] hover:bg-[rgba(201,149,107,0.1)] transition-colors">
                   <Upload size={32} className="text-[#C4A090]" />
                 </div>
                 <p className="text-[#B09080] text-lg mb-2">上传图片开始编辑</p>
