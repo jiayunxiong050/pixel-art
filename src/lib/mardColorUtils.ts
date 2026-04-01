@@ -394,6 +394,10 @@ export const MARD_COLORS_SORTED = [...MARD_COLORS].sort((a, b) => a.id.localeCom
 export const MARD_COLORS_LAB: (MardColor & { lab: [number, number, number] })[] =
   MARD_COLORS.map(color => ({ ...color, lab: rgbToLab(...color.rgb) }));
 
+// 排除 zg 色号后的色卡（用于像素化匹配）
+export const MARD_COLORS_LAB_NO_ZG: (MardColor & { lab: [number, number, number] })[] =
+  MARD_COLORS_LAB.filter(c => !c.id.startsWith('zg'));
+
 // 透明像素标记（不在色卡中出现，用于去背后的透明区域）
 const WHITE_COLOR = MARD_COLORS_LAB.find(c => c.hex === "#FFFFFF")!;
 
@@ -460,9 +464,9 @@ export function deltaE(labA: [number, number, number], labB: [number, number, nu
 export function getClosestMardColor(pixelRGB: [number, number, number]): MardColor {
   const pixelLab = rgbToLab(...pixelRGB);
   let minDistance = Infinity;
-  let closestColor = MARD_COLORS_LAB[0];
+  let closestColor = MARD_COLORS_LAB_NO_ZG[0];
 
-  for (const color of MARD_COLORS_LAB) {
+  for (const color of MARD_COLORS_LAB_NO_ZG) {
     const distance = deltaE(pixelLab, color.lab!);
     if (distance < minDistance) {
       minDistance = distance;
@@ -502,12 +506,12 @@ export function smartMergeGrid(
 
   if (lowFreq.length === 0) return grid; // 无需合并
 
-  // 为每个低频色找最近的非低频色作为替代
+  // 为每个低频色找最近的非低频非zg色作为替代
   const replacementMap = new Map<string, MardColor>();
   for (const color of lowFreq) {
     let minDist = Infinity;
-    let bestReplacement = MARD_COLORS_LAB.find(c => (counts.get(c.id) || 0) >= minCount)!;
-    for (const candidate of MARD_COLORS_LAB) {
+    let bestReplacement = MARD_COLORS_LAB_NO_ZG.find(c => (counts.get(c.id) || 0) >= minCount)!;
+    for (const candidate of MARD_COLORS_LAB_NO_ZG) {
       if ((counts.get(candidate.id) || 0) < minCount) continue;
       if (candidate.id === color.id) continue;
       const dist = deltaE(color.lab!, candidate.lab!);
@@ -560,12 +564,12 @@ export function reduceToTopColors(
   // 找出所有被淘汰的颜色
   const excluded = MARD_COLORS_LAB.filter(c => !topIds.has(c.id) && (counts.get(c.id) || 0) > 0);
 
-  // 为每个被淘汰的颜色找最近的保留学颜色
+  // 为每个被淘汰的颜色找最近的保留学颜色（非zg）
   const replacementMap = new Map<string, MardColor>();
   for (const color of excluded) {
     let minDist = Infinity;
-    let bestReplacement = MARD_COLORS_LAB.find(c => topIds.has(c.id))!;
-    for (const candidate of MARD_COLORS_LAB) {
+    let bestReplacement = MARD_COLORS_LAB_NO_ZG.find(c => topIds.has(c.id))!;
+    for (const candidate of MARD_COLORS_LAB_NO_ZG) {
       if (!topIds.has(candidate.id)) continue;
       if (candidate.id === color.id) continue;
       const dist = deltaE(color.lab!, candidate.lab!);
