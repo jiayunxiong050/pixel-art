@@ -142,18 +142,12 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const centerCanvas = () => {
-      const rect = container.getBoundingClientRect();
-      // canvas 尺寸
-      const cw = gridW * cellSize;
-      const ch = gridH * cellSize;
-      // 居中偏移
-      const panX = (rect.width - cw) / 2;
-      const panY = (rect.height - ch) / 2;
-      setView({ scale: 1, panX, panY });
-    };
-
-    centerCanvas();
+    const rect = container.getBoundingClientRect();
+    const cw = gridW * cellSize;
+    const ch = gridH * cellSize;
+    const panX = (rect.width - cw) / 2;
+    const panY = (rect.height - ch) / 2;
+    setView({ scale: 1, panX, panY });
   }, [gridW, gridH, cellSize]);
 
   // 获取格子坐标
@@ -424,7 +418,7 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-[#FDF8F3] overflow-auto"
+      className="fixed inset-0 bg-[#FDF8F3]"
       style={{ touchAction: 'none' }}
       onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
       onDrop={e => {
