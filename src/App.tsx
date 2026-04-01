@@ -891,16 +891,20 @@ export default function App() {
             />
           ) : (
             <div
-              className="w-full h-full flex items-center justify-center cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-full flex items-center justify-center"
+              onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={handleDrop}
             >
-              <div className="text-center">
+              <button
+                className="text-center cursor-pointer p-8 rounded-2xl hover:bg-[rgba(201,149,107,0.06)] transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-[rgba(201,149,107,0.06)] flex items-center justify-center border border-[rgba(201,149,107,0.12)] hover:bg-[rgba(201,149,107,0.1)] transition-colors">
                   <Upload size={32} className="text-[#C4A090]" />
                 </div>
                 <p className="text-[#B09080] text-lg mb-2">上传图片开始编辑</p>
                 <p className="text-[#C4A090] text-sm">拖入或点击上传</p>
-              </div>
+              </button>
             </div>
           )}
 
