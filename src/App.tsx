@@ -17,6 +17,8 @@ import {
   Undo2,
   X,
   Settings,
+  MoreHorizontal,
+  Square,
 } from 'lucide-react';
 import {
   pixelateImage,
@@ -54,6 +56,7 @@ export default function App() {
   // 移动端状态
   const [showMobileColorPanel, setShowMobileColorPanel] = useState(false);
   const [showMobileSettings, setShowMobileSettings] = useState(false);
+  const [showMobileTools, setShowMobileTools] = useState(false);
 
   // 网格数据
   const [grid, setGrid] = useState<MardColor[][]>([]);
@@ -951,26 +954,18 @@ export default function App() {
             <span className="text-[11px] text-[#B09080]">上传</span>
           </button>
           <button
-            className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
-            onClick={() => setCurrentTool(t => t === 'eyedropper' ? 'select' : 'eyedropper')}
-          >
-            <Pipette size={22} className={currentTool === 'eyedropper' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[11px] text-[#B09080]">取色</span>
-          </button>
-          <button
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center disabled:opacity-40"
-            onClick={() => setCurrentTool(t => t === 'fill' ? 'select' : 'fill')}
-            disabled={!currentColor}
+            onClick={() => setShowMobileTools(v => !v)}
           >
-            <Droplets size={22} className={currentTool === 'fill' ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[11px] text-[#B09080]">填充</span>
+            <Pencil size={22} className={showMobileTools ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
+            <span className="text-[11px] text-[#B09080]">工具</span>
           </button>
           <button
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
             onClick={() => setShowMobileColorPanel(v => !v)}
           >
             <Palette size={22} className={showMobileColorPanel ? "text-[#E8A87C]" : "text-[#7a6a58]"} />
-            <span className="text-[11px] text-[#B09080]">选色</span>
+            <span className="text-[11px] text-[#B09080]">颜色</span>
           </button>
           <button
             className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
@@ -1104,6 +1099,107 @@ export default function App() {
                 应用设置
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 移动端工具面板 */}
+      {showMobileTools && (
+        <div className="md:hidden fixed bottom-20 left-0 right-0 bg-[#FBF1E8] rounded-t-2xl border-t border-x border-[#F5E4D8] p-4 z-40 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-[#B09080]">工具</span>
+            <button onClick={() => setShowMobileTools(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[rgba(201,149,107,0.1)]">
+              <X size={18} className="text-[#C4A090]" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {/* 取色 */}
+            <button
+              onClick={() => { setCurrentTool(t => t === 'eyedropper' ? 'select' : 'eyedropper'); setShowMobileTools(false); }}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors ${
+                currentTool === 'eyedropper'
+                  ? 'bg-[#E8A87C] text-white'
+                  : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+              }`}
+            >
+              <Pipette size={22} />
+              <span className="text-[11px]">取色</span>
+            </button>
+
+            {/* 填充 */}
+            <button
+              onClick={() => { setCurrentTool(t => t === 'fill' ? 'select' : 'fill'); setShowMobileTools(false); }}
+              disabled={!currentColor}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors disabled:opacity-30 ${
+                currentTool === 'fill'
+                  ? 'bg-[#E8A87C] text-white'
+                  : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+              }`}
+            >
+              <Droplets size={22} />
+              <span className="text-[11px]">填充</span>
+            </button>
+
+            {/* 区域擦除 */}
+            <button
+              onClick={() => { setCurrentTool(t => t === 'eraser' ? 'select' : 'eraser'); setShowMobileTools(false); }}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors ${
+                currentTool === 'eraser'
+                  ? 'bg-[#E8A87C] text-white'
+                  : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+              }`}
+            >
+              <Square size={22} />
+              <span className="text-[11px]">区域擦</span>
+            </button>
+
+            {/* 细节擦除 */}
+            <button
+              onClick={() => { setCurrentTool(t => t === 'eraser-detail' ? 'select' : 'eraser-detail'); setShowMobileTools(false); }}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors ${
+                currentTool === 'eraser-detail'
+                  ? 'bg-[#E8A87C] text-white'
+                  : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+              }`}
+            >
+              <Eraser size={22} />
+              <span className="text-[11px]">细节擦</span>
+            </button>
+
+            {/* 铅笔 */}
+            <button
+              onClick={() => { setCurrentTool(t => t === 'pencil' ? 'select' : 'pencil'); setShowMobileTools(false); }}
+              disabled={!currentColor}
+              className={`flex flex-col items-center gap-1 py-3 rounded-xl transition-colors disabled:opacity-30 ${
+                currentTool === 'pencil'
+                  ? 'bg-[#E8A87C] text-white'
+                  : 'bg-[rgba(201,149,107,0.1)] text-[#7A4830]'
+              }`}
+            >
+              <Pencil size={22} />
+              <span className="text-[11px]">铅笔</span>
+            </button>
+
+            {/* 撤销 */}
+            <button
+              onClick={() => { undo(); setShowMobileTools(false); }}
+              disabled={!canUndo}
+              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-[rgba(201,149,107,0.1)] text-[#7A4830] disabled:opacity-30"
+            >
+              <Undo2 size={22} />
+              <span className="text-[11px]">撤销</span>
+            </button>
+
+            {/* 清空 */}
+            <button
+              onClick={() => { clearAll(); setShowMobileTools(false); }}
+              disabled={grid.length === 0}
+              className="flex flex-col items-center gap-1 py-3 rounded-xl bg-red-50 text-red-400 disabled:opacity-30"
+            >
+              <Trash2 size={22} />
+              <span className="text-[11px]">清空</span>
+            </button>
           </div>
         </div>
       )}
