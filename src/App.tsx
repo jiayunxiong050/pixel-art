@@ -707,8 +707,8 @@ export default function App() {
 
       {/* 主区域 */}
       <main className="flex-1 relative flex flex-col bg-[#FDF8F3]">
-        {/* Header */}
-        <header className="h-14 bg-[#FBF1E8] border-b border-[#F5E4D8] flex items-center justify-between px-5">
+        {/* Header - 桌面+移动端显示 */}
+        <header className="h-14 bg-[#FBF1E8] border-b border-[#F5E4D8] flex items-center justify-between px-5 md:px-5 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           {/* 左侧 - Logo 和 画布设置 */}
           <div className="flex items-center gap-6">
             <h1 className="text-sm font-bold tracking-wide text-[#B09080]">MARD Editor</h1>
@@ -830,7 +830,7 @@ export default function App() {
 
         {/* 画布区域 */}
         <div
-          className="flex-1 relative bg-[#FDF8F3]"
+          className="flex-1 relative bg-[#FDF8F3] md:pb-0 pb-16"
           onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
           onDrop={handleDrop}
         >

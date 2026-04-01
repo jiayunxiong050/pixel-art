@@ -299,8 +299,21 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
   }, [view]);
 
   // 触摸事件
+  const lastTouchDistanceRef = useRef<number | null>(null);
+
+  const getTouchDistance = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) return null;
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 2) {
+      // 双指缩放
+      lastTouchDistanceRef.current = getTouchDistance(e);
+      setIsDragging(false);
+    } else if (e.touches.length === 1) {
       const touch = e.touches[0];
       setIsDragging(true);
       dragStartRef.current = { x: touch.clientX, y: touch.clientY, panX: view.panX, panY: view.panY };
@@ -309,7 +322,29 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
-    if (e.touches.length === 1 && isDragging) {
+
+    if (e.touches.length === 2) {
+      // 双指缩放
+      const distance = getTouchDistance(e);
+      if (distance !== null && lastTouchDistanceRef.current !== null) {
+        const scale = distance / lastTouchDistanceRef.current;
+        const newScale = Math.max(0.1, Math.min(5, view.scale * scale));
+
+        // 以两指中心点为缩放中心
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (rect) {
+          const canvasX = centerX - rect.left;
+          const canvasY = centerY - rect.top;
+          const newPanX = canvasX - (canvasX - view.panX) * (newScale / view.scale);
+          const newPanY = canvasY - (canvasY - view.panY) * (newScale / view.scale);
+          setView({ scale: newScale, panX: newPanX, panY: newPanY });
+        }
+
+        lastTouchDistanceRef.current = distance;
+      }
+    } else if (e.touches.length === 1 && isDragging) {
       const touch = e.touches[0];
       const deltaX = touch.clientX - dragStartRef.current.x;
       const deltaY = touch.clientY - dragStartRef.current.y;
@@ -319,10 +354,15 @@ export const BeadCanvas: React.FC<BeadCanvasProps> = ({
         panY: dragStartRef.current.panY + deltaY,
       }));
     }
-  }, [isDragging]);
+  }, [isDragging, view]);
 
-  const handleTouchEnd = useCallback(() => {
-    setIsDragging(false);
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      lastTouchDistanceRef.current = null;
+    }
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+    }
   }, []);
 
   // 鼠标样式
